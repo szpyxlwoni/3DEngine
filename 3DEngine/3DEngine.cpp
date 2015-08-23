@@ -8,10 +8,12 @@
 #include "ddraw.h"
 
 #define MAX_LOADSTRING 100
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
-HWND hwnd = nullptr;
+HWND hwnd;
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
@@ -30,7 +32,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: Place code here.
-	D3D7Helper d3d;
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -45,6 +46,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY3DENGINE));
 
+	D3D7Helper d3d(hwnd, SCREEN_WIDTH, SCREEN_HEIGHT);
 	d3d.GameInit();
 
     MSG msg;

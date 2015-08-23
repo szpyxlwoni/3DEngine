@@ -2,30 +2,8 @@
 #include "D3D7Helper.h"
 #include "2DHelper.h"
 
-extern HWND hwnd; // save the window handle
-extern HINSTANCE hinst; // save the instance
-
-//game var
-LPDIRECTDRAW7         lpdd = nullptr;
-LPDIRECTDRAWSURFACE7  lpddsprimary = nullptr;
-LPDIRECTDRAWSURFACE7  lpddsback = nullptr;
-LPDIRECTDRAWCLIPPER   lpddclipper = nullptr;
-LPDIRECTDRAWCLIPPER   lpddclipperwin = nullptr;
-
-int min_clip_x = 0,
-max_clip_x = (SCREEN_WIDTH - 1),
-min_clip_y = 0,
-max_clip_y = (SCREEN_HEIGHT - 1);
-
-int screen_width = SCREEN_WIDTH,
-screen_height = SCREEN_HEIGHT,
-screen_bpp = SCREEN_BPP;
-
-int window_client_x0 = 0;
-int window_client_y0 = 0;
-
 void D3D7Helper::GameInit() {
-	RECT window_rect = { 0,0,SCREEN_WIDTH - 1,SCREEN_HEIGHT - 1 };
+	RECT window_rect = { 0,0, width - 1, height- 1 };
 
 	AdjustWindowRectEx(&window_rect,
 		(DWORD)GetWindowLong(hwnd, GWL_STYLE),
@@ -35,7 +13,49 @@ void D3D7Helper::GameInit() {
 	window_client_x0 = -window_rect.left;
 	window_client_y0 = -window_rect.top;
 
-	DDraw_Init(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP);
+	int min_clip_x = 0,
+		max_clip_x = (width - 1),
+		min_clip_y = 0,
+		max_clip_y = (height - 1);
+
+	if (FAILED(DirectDrawCreateEx(NULL, (void **)&lpdd, IID_IDirectDraw7, NULL)))
+		return;
+
+	if (FAILED(lpdd->SetCooperativeLevel(hwnd, DDSCL_NORMAL)))
+	{
+		return;
+	}
+
+	DDSURFACEDESC2 ddsd;
+
+	memset(&ddsd, 0, sizeof(ddsd));
+	ddsd.dwSize = sizeof(ddsd);
+
+	ddsd.dwFlags = DDSD_CAPS;
+	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+
+	ddsd.dwBackBufferCount = 0;
+
+	if (FAILED(lpdd->CreateSurface(&ddsd, &lpddsprimary, NULL)))
+	{
+		return;
+	}
+
+	lpddsback = createSurface(width, height);
+
+	fillSurface(lpddsback, 0);
+
+	RECT screen_rect = {0, 0, width, height};
+	lpddclipper = attachClipper(lpddsback, 1, &screen_rect);
+
+	if (FAILED(lpdd->CreateClipper(0, &lpddclipperwin, NULL)))
+		return;
+
+	if (FAILED(lpddclipperwin->SetHWnd(0, hwnd)))
+		return;
+
+	if (FAILED(lpddsprimary->SetClipper(lpddclipperwin)))
+		return;
 }
 
 void D3D7Helper::GameMain() {
@@ -64,7 +84,7 @@ void D3D7Helper::GameMain() {
 	if (FAILED(lpddsback->Unlock(NULL)))
 		return;
 
-	DDraw_Flip();
+	flip();
 
 	Sleep(30);
 }
@@ -86,62 +106,12 @@ void D3D7Helper::GameShutdown() {
 		lpdd->Release();
 }
 
-int DDraw_Init(int width, int height, int bpp) {
-	if (FAILED(DirectDrawCreateEx(NULL, (void **)&lpdd, IID_IDirectDraw7, NULL)))
-		return(0);
-
-	if (FAILED(lpdd->SetCooperativeLevel(hwnd, DDSCL_NORMAL)))
-	{
-		return(0);
-	}
-
-	screen_height = height;
-	screen_width = width;
-	screen_bpp = bpp;
-
-	DDSURFACEDESC2 ddsd;
-
-	memset(&ddsd, 0, sizeof(ddsd));
-	ddsd.dwSize = sizeof(ddsd);
-
-	ddsd.dwFlags = DDSD_CAPS;
-	ddsd.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
-
-	ddsd.dwBackBufferCount = 0;
-
-	if (FAILED(lpdd->CreateSurface(&ddsd, &lpddsprimary, NULL)))
-	{
-		return(0);
-	}
-
-	lpddsback = DDraw_Create_Surface(width, height);
-
-	DDraw_Fill_Surface(lpddsback, 0);
-
-	RECT screen_rect = { 0,0,screen_width,screen_height };
-	lpddclipper = DDraw_Attach_Clipper(lpddsback, 1, &screen_rect);
-
-	if (FAILED(lpdd->CreateClipper(0, &lpddclipperwin, NULL)))
-		return(0);
-
-	if (FAILED(lpddclipperwin->SetHWnd(0, hwnd)))
-		return(0);
-
-	if (FAILED(lpddsprimary->SetClipper(lpddclipperwin)))
-		return(0);
-
-	return(1);
-}
-
-LPDIRECTDRAWSURFACE7 DDraw_Create_Surface(int width, int height)
-{
+LPDIRECTDRAWSURFACE7 D3D7Helper::createSurface(int width, int height) {
 	DDSURFACEDESC2 ddsd;
 	LPDIRECTDRAWSURFACE7 lpdds;
 
-	memset(&ddsd, 0, sizeof(ddsd));
-	ddsd.dwSize = sizeof(ddsd);
+	initDesc(ddsd);
 	ddsd.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT;
-
 	ddsd.dwWidth = width;
 	ddsd.dwHeight = height;
 
@@ -151,7 +121,7 @@ LPDIRECTDRAWSURFACE7 DDraw_Create_Surface(int width, int height)
 	return(lpdds);
 }
 
-int DDraw_Fill_Surface(LPDIRECTDRAWSURFACE7 lpdds, USHORT color, RECT *client)
+void D3D7Helper::fillSurface(LPDIRECTDRAWSURFACE7 lpdds, USHORT color, RECT *client)
 {
 	DDBLTFX ddbltfx;
 
@@ -165,14 +135,9 @@ int DDraw_Fill_Surface(LPDIRECTDRAWSURFACE7 lpdds, USHORT color, RECT *client)
 		NULL,
 		DDBLT_COLORFILL | DDBLT_WAIT,
 		&ddbltfx);
-
-	return(1);
 }
 
-LPDIRECTDRAWCLIPPER DDraw_Attach_Clipper(LPDIRECTDRAWSURFACE7 lpdds,
-	int num_rects,
-	LPRECT clip_list)
-
+LPDIRECTDRAWCLIPPER D3D7Helper::attachClipper(LPDIRECTDRAWSURFACE7 lpdds, int num_rects, LPRECT clip_list)
 {
 	int index;
 	LPDIRECTDRAWCLIPPER lpddclipper;
@@ -226,7 +191,7 @@ LPDIRECTDRAWCLIPPER DDraw_Attach_Clipper(LPDIRECTDRAWSURFACE7 lpdds,
 	return(lpddclipper);
 }
 
-int DDraw_Flip(void)
+void D3D7Helper::flip()
 {
 	RECT    dest_rect;
 
@@ -235,12 +200,8 @@ int DDraw_Flip(void)
 	dest_rect.left += window_client_x0 + 20;
 	dest_rect.top += window_client_y0 + 50;
 
-	dest_rect.right = dest_rect.left + screen_width;
-	dest_rect.bottom = dest_rect.top + screen_height;
+	dest_rect.right = dest_rect.left + width;
+	dest_rect.bottom = dest_rect.top + height;
 
-	if (FAILED(lpddsprimary->Blt(&dest_rect, lpddsback, NULL, DDBLT_WAIT, NULL)))
-		return(0);
-
-	return(1);
-
+	lpddsprimary->Blt(&dest_rect, lpddsback, NULL, DDBLT_WAIT, NULL);
 }
