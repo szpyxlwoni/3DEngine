@@ -7,19 +7,13 @@
 
 class D3D7Helper {
 	public:
-		D3D7Helper();
-		~D3D7Helper();
+		D3D7Helper() = default;
+		~D3D7Helper() = default;
 
 		void GameInit();
 		void GameMain();
 		void GameShutdown();
 };
-
-int Game_Init();
-
-int Game_Main();
-
-int Game_Shutdown();
 
 int DDraw_Init(int width, int height, int bpp);
 

@@ -24,7 +24,7 @@ screen_bpp = SCREEN_BPP;
 int window_client_x0 = 0;
 int window_client_y0 = 0;
 
-int Game_Init() {
+void D3D7Helper::GameInit() {
 	RECT window_rect = { 0,0,SCREEN_WIDTH - 1,SCREEN_HEIGHT - 1 };
 
 	AdjustWindowRectEx(&window_rect,
@@ -36,8 +36,54 @@ int Game_Init() {
 	window_client_y0 = -window_rect.top;
 
 	DDraw_Init(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP);
+}
 
-	return 1;
+void D3D7Helper::GameMain() {
+	DDSURFACEDESC2 ddsd;
+
+	memset(&ddsd, 0, sizeof(ddsd));
+	ddsd.dwSize = sizeof(ddsd);
+
+	if (FAILED(lpddsback->Lock(NULL, &ddsd,
+		DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT,
+		NULL)))
+	{
+		return;
+	}
+
+	int mempitch = (int)ddsd.lPitch;
+	UCHAR *video_buffer = (UCHAR *)ddsd.lpSurface;
+	int x0 = 0;
+	int y0 = 0;
+	int x1 = 500;
+	int y1 = 500;
+
+	Clip_Line(x0, y0, x1, y1, 100, 100, 400, 400);
+	Draw_Line(x0, y0, x1, y1, 0xFFFF0000, video_buffer, mempitch);
+
+	if (FAILED(lpddsback->Unlock(NULL)))
+		return;
+
+	DDraw_Flip();
+
+	Sleep(30);
+}
+
+void D3D7Helper::GameShutdown() {
+	if (lpddclipper)
+		lpddclipper->Release();
+
+	if (lpddclipperwin)
+		lpddclipperwin->Release();
+
+	if (lpddsback)
+		lpddsback->Release();
+
+	if (lpddsprimary)
+		lpddsprimary->Release();
+
+	if (lpdd)
+		lpdd->Release();
 }
 
 int DDraw_Init(int width, int height, int bpp) {
@@ -180,39 +226,6 @@ LPDIRECTDRAWCLIPPER DDraw_Attach_Clipper(LPDIRECTDRAWSURFACE7 lpdds,
 	return(lpddclipper);
 }
 
-int Game_Main() {
-	DDSURFACEDESC2 ddsd;
-
-	memset(&ddsd, 0, sizeof(ddsd));
-	ddsd.dwSize = sizeof(ddsd);
-
-	if (FAILED(lpddsback->Lock(NULL, &ddsd,
-		DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT,
-		NULL)))
-	{
-		return(0);
-	}
-
-	int mempitch = (int)ddsd.lPitch;
-	UCHAR *video_buffer = (UCHAR *)ddsd.lpSurface;
-	int x0 = 0;
-	int y0= 0;
-	int x1 = 500;
-	int y1 = 500;
-
-	Clip_Line(x0, y0, x1, y1, 100, 100, 400, 400);
-	Draw_Line(x0, y0, x1, y1, 0xFFFF0000, video_buffer, mempitch);
-
-	if (FAILED(lpddsback->Unlock(NULL)))
-		return(0);
-
-	DDraw_Flip();
-
-	Sleep(30);
-
-	return 1;
-}
-
 int DDraw_Flip(void)
 {
 	RECT    dest_rect;
@@ -230,23 +243,4 @@ int DDraw_Flip(void)
 
 	return(1);
 
-}
-
-int Game_Shutdown() {
-	if (lpddclipper)
-		lpddclipper->Release();
-
-	if (lpddclipperwin)
-		lpddclipperwin->Release();
-
-	if (lpddsback)
-		lpddsback->Release();
-
-	if (lpddsprimary)
-		lpddsprimary->Release();
-
-	if (lpdd)
-		lpdd->Release();
-
-	return 1;
 }
