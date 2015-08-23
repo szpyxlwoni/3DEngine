@@ -1,9 +1,6 @@
 #include "stdafx.h"
-#include "3DEngineUtil.h"
+#include "D3D7Helper.h"
 #include "2DHelper.h"
-
-#define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
-#define KEYUP(vk_code)   ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 
 extern HWND hwnd; // save the window handle
 extern HINSTANCE hinst; // save the instance

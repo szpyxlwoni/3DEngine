@@ -5,6 +5,16 @@
 #define SCREEN_HEIGHT   480
 #define SCREEN_BPP      32
 
+class D3D7Helper {
+	public:
+		D3D7Helper();
+		~D3D7Helper();
+
+		void GameInit();
+		void GameMain();
+		void GameShutdown();
+};
+
 int Game_Init();
 
 int Game_Main();

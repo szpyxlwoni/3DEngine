@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "3DEngineUtil.h"
+#include "D3D7Helper.h"
 #include "3DEngine.h"
 
 #include "ddraw.h"
