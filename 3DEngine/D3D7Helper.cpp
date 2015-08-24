@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "D3D7Helper.h"
-#include "2DHelper.h"
 
-void D3D7Helper::GameInit() {
+void D3D7Helper::gameInit() {
 	RECT window_rect = { 0,0, width - 1, height- 1 };
 
 	AdjustWindowRectEx(&window_rect,
@@ -12,11 +11,6 @@ void D3D7Helper::GameInit() {
 
 	window_client_x0 = -window_rect.left;
 	window_client_y0 = -window_rect.top;
-
-	int min_clip_x = 0,
-		max_clip_x = (width - 1),
-		min_clip_y = 0,
-		max_clip_y = (height - 1);
 
 	if (FAILED(DirectDrawCreateEx(NULL, (void **)&lpdd, IID_IDirectDraw7, NULL)))
 		return;
@@ -58,7 +52,7 @@ void D3D7Helper::GameInit() {
 		return;
 }
 
-void D3D7Helper::GameMain() {
+void D3D7Helper::gameMain(int frame) {
 	DDSURFACEDESC2 ddsd;
 
 	memset(&ddsd, 0, sizeof(ddsd));
@@ -71,25 +65,18 @@ void D3D7Helper::GameMain() {
 		return;
 	}
 
-	int mempitch = (int)ddsd.lPitch;
-	UCHAR *video_buffer = (UCHAR *)ddsd.lpSurface;
-	int x0 = 0;
-	int y0 = 0;
-	int x1 = 500;
-	int y1 = 500;
-
-	Clip_Line(x0, y0, x1, y1, 100, 100, 400, 400);
-	Draw_Line(x0, y0, x1, y1, 0xFFFF0000, video_buffer, mempitch);
+	GameLogic g;
+	g.run(this, (int)ddsd.lPitch, (UCHAR *)ddsd.lpSurface);
 
 	if (FAILED(lpddsback->Unlock(NULL)))
 		return;
 
 	flip();
 
-	Sleep(30);
+	Sleep(1000.0/frame);
 }
 
-void D3D7Helper::GameShutdown() {
+void D3D7Helper::gameShutdown() {
 	if (lpddclipper)
 		lpddclipper->Release();
 

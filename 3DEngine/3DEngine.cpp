@@ -22,6 +22,7 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+void gameLogic();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -47,7 +48,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_MY3DENGINE));
 
 	D3D7Helper d3d(hwnd, SCREEN_WIDTH, SCREEN_HEIGHT);
-	d3d.GameInit();
+	d3d.gameInit();
 
     MSG msg;
 
@@ -60,10 +61,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
         }
 
-		d3d.GameMain();
+		d3d.gameMain(60);
     }
 
-	d3d.GameShutdown();
+	d3d.gameShutdown();
 
     return (int) msg.wParam;
 }

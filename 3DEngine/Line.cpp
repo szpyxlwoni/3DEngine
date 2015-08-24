@@ -1,7 +1,12 @@
 #include "stdafx.h"
-#include "2DHelper.h"
+#include "Line.h"
 
-int Draw_Line(int x0, int y0, int x1, int y1, DWORD color, UCHAR* surface_start, int lpitch) {
+void Line::drawClipLine(int min_clip_x, int min_clip_y, int max_clip_x, int max_clip_y, DWORD color, UCHAR* surface_start, int lpitch) {
+	clipLine(min_clip_x, min_clip_y, max_clip_x, max_clip_y);
+	drawLine(color, surface_start, lpitch);
+}
+
+void Line::drawLine(DWORD color, UCHAR* surface_start, int lpitch) {
 	int dx,
 		dy,
 		dx2,
@@ -11,10 +16,10 @@ int Draw_Line(int x0, int y0, int x1, int y1, DWORD color, UCHAR* surface_start,
 		error_test,
 		index;
 
-	surface_start += x0 + y0 * lpitch;
+	surface_start += drawX0 + drawY0 * lpitch;
 
-	dx = x1 - x0;
-	dy = y1 - y0;
+	dx = drawX1 - drawX0;
+	dy = drawY1 - drawY0;
 
 	if (dx >= 0) {
 		x_inc = 4;
@@ -69,11 +74,9 @@ int Draw_Line(int x0, int y0, int x1, int y1, DWORD color, UCHAR* surface_start,
 			surface_start += y_inc;
 		}
 	}
-
-	return(1);
 }
 
-int Clip_Line(int& x0, int& y0, int& x1, int& y1, int min_clip_x, int min_clip_y, int max_clip_x, int max_clip_y) {
+void Line::clipLine(int min_clip_x, int min_clip_y, int max_clip_x, int max_clip_y) {
 	int cc = 0, xc0 = 0, yc0 = 0, xc1 = 0, yc1 = 0;
 	if (x0 > max_clip_x) {
 		cc += EAST;
@@ -220,10 +223,8 @@ int Clip_Line(int& x0, int& y0, int& x1, int& y1, int min_clip_x, int min_clip_y
 		break;
 	}
 
-	x0 = xc0;
-	x1 = xc1;
-	y0 = yc0;
-	y1 = yc1;
-
-	return(1);
+	drawX0 = xc0;
+	drawX1 = xc1;
+	drawY0 = yc0;
+	drawY1 = yc1;
 }
