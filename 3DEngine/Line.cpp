@@ -16,7 +16,7 @@ void Line::drawLine(DWORD color, UCHAR* surface_start, int lpitch) {
 		error_test,
 		index;
 
-	surface_start += drawX0 + drawY0 * lpitch;
+	surface_start += drawX0 * 4 + drawY0 * lpitch;
 
 	dx = drawX1 - drawX0;
 	dy = drawY1 - drawY0;

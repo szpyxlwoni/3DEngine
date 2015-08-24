@@ -4,8 +4,8 @@
 #include "Polygon2D.h"
 
 void GameLogic::run(D3D7Helper* const helper, int pitch, UCHAR* video_buffer) {
-	//Line line(0, 0, 300, 300);
-	//line.drawClipLine(100, 100, 300, 300, 0xFFFF0000, video_buffer, pitch);
+	Line line(100, 100, 0, 0);
+	line.drawClipLine(0, 0, 300, 300, 0xFFFF0000, video_buffer, pitch);
 
 	int asteroid_vertices[16] = { 33,-3, 9,-18, -12,-9, -21,-12, -9,6, -15,15, -3,27, 21,21 };
 	vector<Vertex2D> vlist;
