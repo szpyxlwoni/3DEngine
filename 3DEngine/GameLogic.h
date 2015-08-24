@@ -1,5 +1,7 @@
 #pragma once
-#include "D3D7Helper.h"
+#include "Line.h"
+
+class D3D7Helper;
 
 class GameLogic {
     public:

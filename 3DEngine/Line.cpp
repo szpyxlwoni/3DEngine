@@ -77,7 +77,7 @@ void Line::drawLine(DWORD color, UCHAR* surface_start, int lpitch) {
 }
 
 void Line::clipLine(int min_clip_x, int min_clip_y, int max_clip_x, int max_clip_y) {
-	int cc = 0, xc0 = 0, yc0 = 0, xc1 = 0, yc1 = 0;
+	int cc = 0, xc0 = x0, yc0 = y0, xc1 = x1, yc1 = y1;
 	if (x0 > max_clip_x) {
 		cc += EAST;
 	}
