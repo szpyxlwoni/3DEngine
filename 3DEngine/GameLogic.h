@@ -1,5 +1,4 @@
 #pragma once
-#include "Line.h"
 
 class D3D7Helper;
 
