@@ -6,8 +6,8 @@ using std::vector;
 
 class Vertex2D {
 	public:
-		Vertex2D(int x, int y) :x(x), y(y) {};
-		int x, y;
+		Vertex2D(float x, float y) :x(x), y(y) {};
+		float x, y;
 };
 
 class Polygon2D {
